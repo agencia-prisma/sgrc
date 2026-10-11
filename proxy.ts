@@ -39,14 +39,18 @@ export async function proxy(request: NextRequest) {
   }
 
   const isAuthenticated = Boolean(data?.claims);
-  const isLoginPage = request.nextUrl.pathname === "/login";
+  const isPublicAuthPage = [
+    "/login",
+    "/forgot-password",
+    "/auth/callback",
+  ].includes(request.nextUrl.pathname);
 
-  if (!isLoginPage && !isAuthenticated) {
+  if (!isPublicAuthPage && !isAuthenticated) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isLoginPage && isAuthenticated) {
+  if (request.nextUrl.pathname === "/login" && isAuthenticated) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

@@ -120,6 +120,17 @@ a {
   opacity: 0.7;
 }
 
+.text-link {
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.text-link:hover {
+  color: var(--primary-hover);
+}
+
 .notice {
   margin: 0;
   padding: 12px;

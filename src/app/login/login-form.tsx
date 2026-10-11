@@ -2,11 +2,18 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginForm() {
+export default function LoginForm({
+  initialMessage,
+}: {
+  initialMessage?: string;
+}) {
   const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    initialMessage ?? null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -68,6 +75,10 @@ export default function LoginForm() {
           type="password"
         />
       </label>
+
+      <Link className="text-link" href="/forgot-password">
+        Ainda não definiu ou esqueceu sua senha?
+      </Link>
 
       {errorMessage ? (
         <p aria-live="polite" className="notice" role="alert">

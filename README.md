@@ -59,6 +59,8 @@ O acesso usa Supabase Auth com sessão em cookies seguros compatíveis com SSR. 
 
 A aplicação usa somente `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A chave `service_role` é secreta e nunca deve ser exposta no frontend ou adicionada ao Git. O proxy valida a sessão e protege as rotas; cada módulo futuro deverá também aplicar autorização no servidor e políticas RLS próprias. O painel inicial apenas confirma a autenticação e exibe os papéis atribuídos; ainda não implementa permissões ou fluxos comerciais. A exigência de MFA para perfis privilegiados, prevista no escopo, ainda precisa ser implementada antes de disponibilizar dados ou operações reais.
 
+Na tela de login, use **Ainda não definiu ou esqueceu sua senha?** para solicitar um link de definição de senha por e-mail. No Supabase, inclua a URL `https://<dominio-da-aplicacao>/auth/callback` na lista de URLs permitidas em **Authentication → URL Configuration → Redirect URLs**. O link retorna à aplicação e permite definir a senha; não compartilhe esse link.
+
 Para o primeiro administrador, crie a conta pelo painel Auth do Supabase e, em seguida, atribua o papel usando o SQL Editor administrativo, substituindo o e-mail:
 
 ```sql

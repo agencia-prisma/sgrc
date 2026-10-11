@@ -9,11 +9,11 @@ Repositório inicial do SGRC.
 
 ## Escopo atual
 
-O sistema de gestão comercial ainda não foi implementado. A aplicação web foi iniciada com Next.js e TypeScript, integrada ao Supabase Auth. As regras aprovadas serão aplicadas conforme cada módulo de negócio for implementado.
+A aplicação web usa Next.js e TypeScript com autenticação pelo Supabase Auth. A fundação do primeiro módulo comercial inclui cadastro de representantes/divulgadores, territórios hierárquicos e vínculos de equipe e território no banco; as telas de gestão desse módulo ainda serão implementadas.
 
 ## Supabase
 
-A configuração local e as migrations do banco ficam em `supabase/`. O primeiro schema contém apenas perfis de acesso e papéis; não inclui dados ou fluxos comerciais.
+A configuração local e as migrations do banco ficam em `supabase/`. O schema inclui perfis, papéis, equipe comercial e territórios.
 
 ### Desenvolvimento local
 
@@ -42,6 +42,8 @@ No projeto Vercel, abra **Settings → Environment Variables** e configure estas
 
 - `NEXT_PUBLIC_SUPABASE_URL`: URL do projeto Supabase.
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: chave publishable do Supabase.
+- `NEXT_PUBLIC_APP_URL`: URL pública da aplicação, por exemplo `https://sgrc-gustavo-prisma.vercel.app`.
+- `SUPABASE_SERVICE_ROLE_KEY`: chave secreta de servidor necessária para convidar usuários e administrar a equipe. Configure como variável secreta sem prefixo `NEXT_PUBLIC_`; nunca a use no browser nem a compartilhe.
 
 Para puxar as variáveis de Development para o ambiente local, autentique e vincule a CLI da Vercel ao projeto uma vez:
 
@@ -56,6 +58,8 @@ O comando `env pull` atualiza `.env.local` com as variáveis da Vercel. Para usa
 ### Autenticação e acessos
 
 O acesso usa Supabase Auth com sessão em cookies seguros compatíveis com SSR. O cadastro público e o login anônimo estão desabilitados na configuração local e não há fluxo de cadastro na aplicação. Em projeto hospedado, confirme também que novos cadastros por e-mail e acessos anônimos estão desabilitados nas configurações de Auth. Nesta etapa inicial, um administrador cria a conta pelo painel Auth do Supabase e atribui o papel correspondente em `public.user_roles`. O fluxo de convite por e-mail ainda não foi implementado. O usuário só consegue consultar seu próprio perfil e papéis por RLS.
+
+No módulo comercial, super administradores e diretores podem consultar e manter equipe e territórios; gerentes de vendas podem consultar seus subordinados diretos; representantes e divulgadores podem consultar apenas os próprios registros e territórios atribuídos. As tabelas aplicam essas regras com RLS. A tela **Gerenciar equipe comercial** permite criar territórios hierárquicos e convidar representantes/divulgadores com gerente e territórios opcionais. O convite e a atribuição de papel são executados no servidor; a `service_role` não é exposta ao navegador. Contas já existentes no Auth ainda exigem um fluxo próprio de associação. Cadastros comerciais devem apontar para perfis autenticados e com o papel correspondente.
 
 A aplicação usa somente `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A chave `service_role` é secreta e nunca deve ser exposta no frontend ou adicionada ao Git. O proxy valida a sessão e protege as rotas; cada módulo futuro deverá também aplicar autorização no servidor e políticas RLS próprias. O painel inicial apenas confirma a autenticação e exibe os papéis atribuídos; ainda não implementa permissões ou fluxos comerciais. A exigência de MFA para perfis privilegiados, prevista no escopo, ainda precisa ser implementada antes de disponibilizar dados ou operações reais.
 

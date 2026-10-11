@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import SignOutButton from "./sign-out-button";
 
@@ -71,6 +72,14 @@ export default async function DashboardPage() {
               Peça ao administrador para concluir a configuração do acesso.
             </p>
           )}
+
+          {rolesResult.data.some(
+            ({ role }) => role === "super_admin" || role === "director",
+          ) ? (
+            <Link className="button dashboard-action" href="/dashboard/equipe">
+              Gerenciar equipe comercial
+            </Link>
+          ) : null}
         </div>
       </section>
     </main>

@@ -90,6 +90,10 @@ a {
   color: var(--foreground);
 }
 
+.multi-select {
+  min-height: 120px;
+}
+
 .input:focus-visible,
 .button:focus-visible {
   outline: 3px solid rgb(91 59 131 / 24%);
@@ -141,12 +145,117 @@ a {
   line-height: 1.5;
 }
 
+.success-notice {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #e9f7ee;
+  color: #1d6438;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .dashboard {
   width: min(100%, 720px);
 }
 
+.commercial-page {
+  width: min(100%, 1120px);
+}
+
+.commercial-page .dashboard-card {
+  padding: 32px;
+}
+
+.commercial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.subcard {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fcfbfd;
+}
+
+.section-title {
+  margin: 0 0 18px;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+.field-help {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.data-section {
+  margin-top: 32px;
+}
+
+.data-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.data-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+
+.status-label,
+.empty-state {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  vertical-align: top;
+}
+
+.data-table th {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 28px;
+  text-align: left;
+}
+
 .dashboard-card {
   width: 100%;
+}
+
+.dashboard-action {
+  margin-top: 24px;
 }
 
 .dashboard-header {
@@ -200,6 +309,14 @@ a {
   .auth-card,
   .dashboard-card {
     padding: 26px 22px;
+  }
+
+  .commercial-page .dashboard-card {
+    padding: 24px 18px;
+  }
+
+  .commercial-grid {
+    grid-template-columns: 1fr;
   }
 
   .dashboard-header {

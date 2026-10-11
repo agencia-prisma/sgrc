@@ -2,4 +2,10 @@
 
 Repositório inicial do SGRC.
 
-Neste momento, o escopo é somente preparar a sincronização com o GitHub. O sistema de gestão ainda não foi implementado.
+## Decisões aprovadas
+
+- Supabase será a plataforma de dados do sistema.
+
+## Escopo atual
+
+O sistema de gestão ainda não foi implementado. A stack de frontend e os módulos serão definidos posteriormente. As regras de negócio aprovadas serão aplicadas quando cada módulo correspondente for implementado.

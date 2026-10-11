@@ -7,16 +7,20 @@ export default async function DashboardPage() {
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
 
-  if (claimsError || !claimsData) {
+  if (claimsError) {
+    console.error("Supabase session validation failed in dashboard.", {
+      name: claimsError.name,
+      code: "code" in claimsError ? claimsError.code : undefined,
+      status: "status" in claimsError ? claimsError.status : undefined,
+    });
     throw new Error("Não foi possível validar a sessão atual.");
   }
 
-  const { claims } = claimsData;
-
-  if (!claims) {
+  if (!claimsData?.claims) {
     redirect("/login");
   }
 
+  const { claims } = claimsData;
   const userId = claims.sub;
   const [profileResult, rolesResult] = await Promise.all([
     supabase

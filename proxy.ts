@@ -27,13 +27,18 @@ export async function proxy(request: NextRequest) {
 
   const { data, error } = await supabase.auth.getClaims();
 
-  if (error || !data) {
+  if (error) {
+    console.error("Supabase session validation failed in proxy.", {
+      name: error.name,
+      code: "code" in error ? error.code : undefined,
+      status: "status" in error ? error.status : undefined,
+    });
     return new NextResponse("Não foi possível validar a sessão com o Supabase.", {
       status: 503,
     });
   }
 
-  const isAuthenticated = Boolean(data.claims);
+  const isAuthenticated = Boolean(data?.claims);
   const isLoginPage = request.nextUrl.pathname === "/login";
 
   if (!isLoginPage && !isAuthenticated) {

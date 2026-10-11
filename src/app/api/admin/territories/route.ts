@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCommercialAdmin } from "@/lib/auth/require-commercial-admin";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(request: NextRequest) {
+  if (process.env.VERCEL === "1" && process.env.VERCEL_ENV !== "production") {
+    return NextResponse.json(
+      {
+        error:
+          "Alterações de territórios estão desabilitadas fora do ambiente de produção.",
+      },
+      { status: 503 },
+    );
+  }
+
   if (request.headers.get("origin") !== request.nextUrl.origin) {
     return NextResponse.json(
       { error: "A origem da solicitação não é permitida." },
@@ -37,6 +46,26 @@ export async function POST(request: NextRequest) {
 
   const input = body as Record<string, unknown>;
   const name = typeof input.name === "string" ? input.name.trim() : "";
+  if (
+    input.code !== undefined &&
+    input.code !== null &&
+    typeof input.code !== "string"
+  ) {
+    return NextResponse.json(
+      { error: "O código do território deve ser um texto." },
+      { status: 400 },
+    );
+  }
+  if (
+    input.parentId !== undefined &&
+    input.parentId !== null &&
+    typeof input.parentId !== "string"
+  ) {
+    return NextResponse.json(
+      { error: "Selecione um território superior válido." },
+      { status: 400 },
+    );
+  }
   const code =
     typeof input.code === "string" && input.code.trim()
       ? input.code.trim()
@@ -67,8 +96,33 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const admin = createAdminClient();
-  const { data, error } = await admin
+  if (parentId) {
+    const { data: parent, error: parentError } = await authorization.supabase
+      .from("territories")
+      .select("id")
+      .eq("id", parentId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (parentError) {
+      console.error("Commercial parent territory lookup failed.", {
+        code: parentError.code,
+      });
+      return NextResponse.json(
+        { error: "Não foi possível validar o território superior." },
+        { status: 503 },
+      );
+    }
+
+    if (!parent) {
+      return NextResponse.json(
+        { error: "O território superior não existe ou está inativo." },
+        { status: 400 },
+      );
+    }
+  }
+
+  const { data, error } = await authorization.supabase
     .from("territories")
     .insert({ name, code, parent_id: parentId })
     .select("id, name")

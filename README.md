@@ -38,12 +38,14 @@ npm run dev
 
 O arquivo `.env.example` **não é substituído**: ele é apenas um modelo versionado com nomes e valores de exemplo. O arquivo `.env.local` é local, ignorado pelo Git, e pode receber as variáveis do projeto Vercel para desenvolvimento. No deploy, a própria Vercel injeta as variáveis configuradas no projeto; a aplicação não busca variáveis remotamente em tempo de execução.
 
-No projeto Vercel, abra **Settings → Environment Variables** e configure estas variáveis para os ambientes necessários (Development, Preview e Production):
+No projeto Vercel, abra **Settings → Environment Variables** e configure as variáveis públicas nos ambientes que usam o Supabase correspondente:
 
 - `NEXT_PUBLIC_SUPABASE_URL`: URL do projeto Supabase.
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: chave publishable do Supabase.
-- `NEXT_PUBLIC_APP_URL`: URL pública da aplicação, por exemplo `https://sgrc-gustavo-prisma.vercel.app`.
-- `SUPABASE_SERVICE_ROLE_KEY`: chave secreta de servidor necessária para convidar usuários e administrar a equipe. Configure como variável secreta sem prefixo `NEXT_PUBLIC_`; nunca a use no browser nem a compartilhe.
+- `NEXT_PUBLIC_APP_URL`: URL pública da aplicação, por exemplo `https://sgrc-gustavo-prisma.vercel.app`. Configure o domínio correto por ambiente.
+- `SUPABASE_SERVICE_ROLE_KEY`: chave secreta de servidor usada para convites; configure somente no ambiente de produção ou junto de um Supabase isolado. Não a configure em Preview que aponte para produção. Nunca use prefixo `NEXT_PUBLIC_`, exponha no browser ou compartilhe essa chave.
+
+Deploys Vercel em Preview e Development não podem gravar territórios nem enviar convites. Isso evita que uma visualização de teste altere dados do Supabase de produção. Localmente, sem a chave de serviço, a página de equipe continua permitindo consulta e cadastro de territórios via RLS; o envio de convites fica desabilitado.
 
 Para puxar as variáveis de Development para o ambiente local, autentique e vincule a CLI da Vercel ao projeto uma vez:
 
@@ -57,11 +59,11 @@ O comando `env pull` atualiza `.env.local` com as variáveis da Vercel. Para usa
 
 ### Autenticação e acessos
 
-O acesso usa Supabase Auth com sessão em cookies seguros compatíveis com SSR. O cadastro público e o login anônimo estão desabilitados na configuração local e não há fluxo de cadastro na aplicação. Em projeto hospedado, confirme também que novos cadastros por e-mail e acessos anônimos estão desabilitados nas configurações de Auth. Nesta etapa inicial, um administrador cria a conta pelo painel Auth do Supabase e atribui o papel correspondente em `public.user_roles`. O fluxo de convite por e-mail ainda não foi implementado. O usuário só consegue consultar seu próprio perfil e papéis por RLS.
+O acesso usa Supabase Auth com sessão em cookies seguros compatíveis com SSR. O cadastro público e o login anônimo estão desabilitados na configuração local e não há cadastro público na aplicação. Em projeto hospedado, confirme também que novos cadastros por e-mail e acessos anônimos estão desabilitados nas configurações de Auth. Administradores podem convidar representantes e divulgadores pela tela de equipe; demais contas e papéis ainda são provisionados pelo painel administrativo do Supabase.
 
 No módulo comercial, super administradores e diretores podem consultar e manter equipe e territórios; gerentes de vendas podem consultar seus subordinados diretos; representantes e divulgadores podem consultar apenas os próprios registros e territórios atribuídos. As tabelas aplicam essas regras com RLS. A tela **Gerenciar equipe comercial** permite criar territórios hierárquicos e convidar representantes/divulgadores com gerente e territórios opcionais. O convite e a atribuição de papel são executados no servidor; a `service_role` não é exposta ao navegador. Contas já existentes no Auth ainda exigem um fluxo próprio de associação. Cadastros comerciais devem apontar para perfis autenticados e com o papel correspondente.
 
-A aplicação usa somente `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A chave `service_role` é secreta e nunca deve ser exposta no frontend ou adicionada ao Git. O proxy valida a sessão e protege as rotas; cada módulo futuro deverá também aplicar autorização no servidor e políticas RLS próprias. O painel inicial apenas confirma a autenticação e exibe os papéis atribuídos; ainda não implementa permissões ou fluxos comerciais. A exigência de MFA para perfis privilegiados, prevista no escopo, ainda precisa ser implementada antes de disponibilizar dados ou operações reais.
+A cliente de navegador usa somente `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A chave `service_role` é secreta e nunca deve ser exposta no frontend ou adicionada ao Git. O proxy valida a sessão e protege as rotas; cada módulo aplica autorização no servidor e políticas RLS. O painel inicial é uma central de navegação e a primeira área implementada permite administrar a equipe comercial e os territórios. A exigência de MFA para perfis privilegiados, prevista no escopo, ainda precisa ser implementada antes de disponibilizar dados ou operações comerciais adicionais.
 
 Na tela de login, use **Ainda não definiu ou esqueceu sua senha?** para solicitar um link de definição de senha por e-mail. No Supabase, inclua a URL `https://<dominio-da-aplicacao>/auth/callback` na lista de URLs permitidas em **Authentication → URL Configuration → Redirect URLs**. O link retorna à aplicação e permite definir a senha; não compartilhe esse link.
 

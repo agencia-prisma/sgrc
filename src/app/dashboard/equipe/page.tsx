@@ -2,7 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import CreateTerritoryForm from "./create-territory-form";
 import InviteMemberForm from "./invite-member-form";
-import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  createAdminClient,
+  hasSupabaseServiceRoleKey,
+} from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function CommercialTeamPage() {
@@ -39,66 +42,96 @@ export default async function CommercialTeamPage() {
     redirect("/dashboard");
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      "A gestão da equipe requer a variável secreta SUPABASE_SERVICE_ROLE_KEY no servidor.",
-    );
-  }
-
-  const admin = createAdminClient();
   const [
     membersResult,
     territoriesResult,
     assignmentsResult,
-    memberRolesResult,
     profilesResult,
-    usersResult,
   ] = await Promise.all([
-    admin
+    supabase
       .from("commercial_team_members")
       .select("user_id, member_type, manager_user_id, is_active")
       .order("created_at", { ascending: false }),
-    admin
+    supabase
       .from("territories")
       .select("id, name, code, parent_id, is_active")
       .order("name"),
-    admin
+    supabase
       .from("commercial_team_territory_assignments")
       .select("user_id, territory_id"),
-    admin
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "sales_manager"),
-    admin.from("profiles").select("id, display_name"),
-    admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+    supabase.from("profiles").select("id, display_name"),
   ]);
 
   if (
     membersResult.error ||
     territoriesResult.error ||
     assignmentsResult.error ||
-    memberRolesResult.error ||
-    profilesResult.error ||
-    usersResult.error
+    profilesResult.error
   ) {
     console.error("Commercial team data loading failed.", {
       codes: [
         membersResult.error?.code,
         territoriesResult.error?.code,
         assignmentsResult.error?.code,
-        memberRolesResult.error?.code,
         profilesResult.error?.code,
-        usersResult.error?.code,
       ].filter(Boolean),
     });
     throw new Error("Não foi possível carregar os dados da equipe comercial.");
   }
 
+  const managers: { id: string; label: string }[] = [];
+  const usersById = new Map<string, string>();
+  let canInviteMembers = hasSupabaseServiceRoleKey();
+  let invitationNotice: string | null = canInviteMembers
+    ? null
+    : "O envio de convites está indisponível neste ambiente. O administrador deve configurar a chave de serviço somente no servidor para habilitar essa função.";
+
+  if (canInviteMembers) {
+    const admin = createAdminClient();
+    const [managerRolesResult, usersResult] = await Promise.all([
+      admin.from("user_roles").select("user_id").eq("role", "sales_manager"),
+      admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+    ]);
+
+    if (managerRolesResult.error) {
+      console.error("Commercial manager list loading failed.", {
+        code: managerRolesResult.error.code,
+      });
+      canInviteMembers = false;
+      invitationNotice =
+        "Não foi possível carregar os gerentes disponíveis. Atualize a página antes de enviar convites.";
+    }
+
+    if (usersResult.error) {
+      console.error("Commercial user email lookup failed.", {
+        code: usersResult.error.code,
+      });
+    } else {
+      for (const user of usersResult.data.users) {
+        if (user.email) {
+          usersById.set(user.id, user.email);
+        }
+      }
+    }
+
+    if (!managerRolesResult.error) {
+      const profilesById = new Map(
+        profilesResult.data.map((profile) => [profile.id, profile.display_name]),
+      );
+      managers.push(
+        ...managerRolesResult.data.map(({ user_id }) => ({
+          id: user_id,
+          label:
+            profilesById.get(user_id) ||
+            usersById.get(user_id) ||
+            `Gerente ${user_id.slice(0, 8)}`,
+        })),
+      );
+    }
+  }
+
   const profilesById = new Map(
     profilesResult.data.map((profile) => [profile.id, profile.display_name]),
-  );
-  const usersById = new Map(
-    usersResult.data.users.map((user) => [user.id, user.email ?? ""]),
   );
   const territoriesById = new Map(
     territoriesResult.data.map((territory) => [territory.id, territory]),
@@ -109,15 +142,9 @@ export default async function CommercialTeamPage() {
       territory.code ? `${territory.name} (${territory.code})` : territory.name,
     ]),
   );
-  const managers = memberRolesResult.data
-    .map(({ user_id }) => ({
-      id: user_id,
-      label:
-        profilesById.get(user_id) ||
-        usersById.get(user_id) ||
-        `Gerente ${user_id.slice(0, 8)}`,
-    }))
-    .sort((left, right) => left.label.localeCompare(right.label, "pt-BR"));
+  managers.sort((left, right) =>
+    left.label.localeCompare(right.label, "pt-BR"),
+  );
   const memberOptions = membersResult.data.map((member) => ({
     id: member.user_id,
     displayName:
@@ -174,10 +201,14 @@ export default async function CommercialTeamPage() {
               <h2 className="section-title" id="member-form-title">
                 Convidar membro
               </h2>
-              <InviteMemberForm
-                managers={managers}
-                territories={territoryOptions}
-              />
+              {canInviteMembers ? (
+                <InviteMemberForm
+                  managers={managers}
+                  territories={territoryOptions}
+                />
+              ) : (
+                <p className="notice" role="status">{invitationNotice}</p>
+              )}
             </section>
           </div>
 

@@ -10,15 +10,3 @@ export function getSupabaseConfig() {
 
   return { url, publishableKey };
 }
-
-export function getSupabaseServiceRoleKey() {
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!serviceRoleKey) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY não está configurada. Adicione-a como variável secreta no servidor.",
-    );
-  }
-
-  return serviceRoleKey;
-}

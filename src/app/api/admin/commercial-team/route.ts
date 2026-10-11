@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCommercialAdmin } from "@/lib/auth/require-commercial-admin";
-import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  createAdminClient,
+  hasSupabaseServiceRoleKey,
+} from "@/lib/supabase/admin";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -11,6 +14,13 @@ function isSameOrigin(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (process.env.VERCEL === "1" && process.env.VERCEL_ENV !== "production") {
+    return NextResponse.json(
+      { error: "Convites estão desabilitados fora do ambiente de produção." },
+      { status: 503 },
+    );
+  }
+
   if (!isSameOrigin(request)) {
     return NextResponse.json(
       { error: "A origem da solicitação não é permitida." },
@@ -46,6 +56,16 @@ export async function POST(request: NextRequest) {
   const displayName =
     typeof input.displayName === "string" ? input.displayName.trim() : "";
   const memberType = input.memberType;
+  if (
+    input.managerUserId !== undefined &&
+    input.managerUserId !== null &&
+    typeof input.managerUserId !== "string"
+  ) {
+    return NextResponse.json(
+      { error: "Selecione um gerente de vendas válido." },
+      { status: 400 },
+    );
+  }
   const managerUserId =
     typeof input.managerUserId === "string" && input.managerUserId
       ? input.managerUserId
@@ -75,7 +95,7 @@ export async function POST(request: NextRequest) {
 
   if (
     managerUserId !== null &&
-    (!UUID_PATTERN.test(managerUserId) || managerUserId === authorization.userId)
+    !UUID_PATTERN.test(managerUserId)
   ) {
     return NextResponse.json(
       { error: "Selecione um gerente de vendas válido." },
@@ -97,7 +117,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!hasSupabaseServiceRoleKey()) {
     return NextResponse.json(
       { error: "O serviço de convites ainda não está configurado no servidor." },
       { status: 503 },
@@ -219,13 +239,18 @@ export async function POST(request: NextRequest) {
   );
 
   if (provisioningError) {
+    const { error: cleanupError } = await admin.auth.admin.deleteUser(
+      invitation.user.id,
+    );
     console.error("Commercial team provisioning failed after invitation.", {
       code: provisioningError.code,
+      cleanupCode: cleanupError?.status,
     });
     return NextResponse.json(
       {
-        error:
-          "O convite foi enviado, mas o cadastro comercial não foi concluído. Não reenvie o convite; peça ao administrador para finalizar a associação.",
+        error: cleanupError
+          ? "O convite foi enviado, mas o cadastro comercial falhou e a conta provisória não pôde ser removida. Não reenvie o convite; peça ao administrador para corrigir o cadastro."
+          : "Não foi possível concluir o cadastro comercial. A conta provisória foi removida e o link enviado não é mais válido. Corrija o problema antes de enviar outro convite.",
       },
       { status: 500 },
     );

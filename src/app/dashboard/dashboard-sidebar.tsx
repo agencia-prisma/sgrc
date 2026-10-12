@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DashboardIcon from "./dashboard-icon";
+import NotificationBell from "./notification-bell";
 
 export default function DashboardSidebar({
   canAccessCrm,
@@ -33,6 +34,8 @@ export default function DashboardSidebar({
           <small>Gestão comercial</small>
         </span>
       </Link>
+
+      {canAccessCrm ? <NotificationBell /> : null}
 
       <nav className="sidebar-nav">
         <p className="nav-group-label">Início</p>

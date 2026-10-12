@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCrmAccess } from "@/lib/crm/require-crm-access";
+import { sendSalesOrderReviewEmail } from "@/lib/orders/send-review-email";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -70,6 +71,27 @@ export async function POST(
     );
   }
 
+  const { data: order, error: orderError } = await authorization.supabase
+    .from("sales_orders")
+    .select("owner_user_id, customer_name_snapshot")
+    .eq("id", id)
+    .maybeSingle();
+  if (orderError) {
+    console.error("Sales order review context lookup failed.", {
+      code: orderError.code,
+    });
+    return NextResponse.json(
+      { error: "Não foi possível carregar os dados do pedido." },
+      { status: 503 },
+    );
+  }
+  if (!order) {
+    return NextResponse.json(
+      { error: "O pedido não foi encontrado ou você não tem permissão para revisá-lo." },
+      { status: 404 },
+    );
+  }
+
   const { error } = await authorization.supabase.rpc("review_sales_order", {
     target_order_id: id,
     approve: input.approve,
@@ -82,7 +104,32 @@ export async function POST(
       { status: 409 },
     );
   }
+
+  let emailResult: { sent: boolean; error: string | null };
+  try {
+    emailResult = await sendSalesOrderReviewEmail({
+      orderId: id,
+      ownerUserId: order.owner_user_id,
+      customerName: order.customer_name_snapshot,
+      outcome: input.approve ? "approved" : "rejected",
+      rejectionReason: reason,
+    });
+  } catch (emailError) {
+    console.error("Sales order review email delivery failed.", {
+      orderId: id,
+      errorName:
+        emailError instanceof Error ? emailError.name : "UnknownError",
+    });
+    emailResult = {
+      sent: false,
+      error:
+        "A notificação interna foi criada, mas o e-mail não pôde ser enviado. Verifique a configuração do serviço.",
+    };
+  }
+
   return NextResponse.json({
     message: input.approve ? "Pedido aprovado." : "Pedido rejeitado.",
+    emailSent: emailResult.sent,
+    emailError: emailResult.error,
   });
 }

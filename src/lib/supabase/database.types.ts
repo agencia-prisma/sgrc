@@ -363,6 +363,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      sales_order_notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          order_id: string;
+          notification_type: "approved" | "rejected";
+          title: string;
+          message: string;
+          email_status: "pending" | "sent" | "failed";
+          created_at: string;
+          read_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          order_id: string;
+          notification_type: "approved" | "rejected";
+          title: string;
+          message: string;
+          email_status?: "pending" | "sent" | "failed";
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          order_id?: string;
+          notification_type?: "approved" | "rejected";
+          title?: string;
+          message?: string;
+          email_status?: "pending" | "sent" | "failed";
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

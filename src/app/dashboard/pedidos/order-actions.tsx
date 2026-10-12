@@ -14,6 +14,7 @@ export default function OrderActions({
 }) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function sendAction(
@@ -21,6 +22,7 @@ export default function OrderActions({
     payload?: { approve: boolean; reason?: string },
   ) {
     setErrorMessage(null);
+    setStatusMessage(null);
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/orders/${orderId}/${action}`, {
@@ -28,11 +30,21 @@ export default function OrderActions({
         headers: { "Content-Type": "application/json" },
         ...(payload ? { body: JSON.stringify(payload) } : {}),
       });
-      const result = (await response.json()) as { error?: string };
+      const result = (await response.json()) as {
+        error?: string;
+        message?: string;
+        emailSent?: boolean;
+        emailError?: string | null;
+      };
       if (!response.ok) {
         setErrorMessage(result.error ?? "Não foi possível atualizar o pedido.");
         return;
       }
+      setStatusMessage(
+        result.emailSent === false
+          ? `${result.message ?? "Decisão registrada."} ${result.emailError ?? "O e-mail não foi enviado; a notificação interna está disponível."}`
+          : result.message ?? "Ação concluída.",
+      );
       router.refresh();
     } catch {
       setErrorMessage(
@@ -100,6 +112,11 @@ export default function OrderActions({
       {errorMessage ? (
         <p aria-live="polite" className="notice" role="alert">
           {errorMessage}
+        </p>
+      ) : null}
+      {statusMessage ? (
+        <p aria-live="polite" className="success-notice" role="status">
+          {statusMessage}
         </p>
       ) : null}
     </div>

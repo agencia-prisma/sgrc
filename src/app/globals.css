@@ -160,6 +160,13 @@ a:focus-visible {
   background: white;
 }
 
+.mfa-qr-code {
+  display: block;
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+}
+
 .mfa-secret {
   overflow-wrap: anywhere;
   padding: 12px;

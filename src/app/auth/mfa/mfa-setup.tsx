@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -13,8 +12,9 @@ type MfaState =
   | { status: "challenge"; factorId: string };
 
 function asQrImageSource(qrCode: string) {
-  if (qrCode.startsWith("data:")) return qrCode;
-  return `data:image/svg+xml;utf-8,${encodeURIComponent(qrCode)}`;
+  const svgDataUrl = /^data:image\/svg\+xml[^,]*,/i;
+  const svg = qrCode.replace(svgDataUrl, "");
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 export default function MfaSetup() {
@@ -211,12 +211,12 @@ export default function MfaSetup() {
       {state.status === "enrollment" ? (
         <>
           <div className="mfa-qr">
-            <Image
+            {/* The Supabase-generated SVG is a data URL and must not be optimized. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               alt="Código QR para adicionar o SGRC ao aplicativo autenticador"
-              height={220}
+              className="mfa-qr-code"
               src={state.qrCode}
-              unoptimized
-              width={220}
             />
           </div>
           <p className="description">

@@ -178,7 +178,7 @@ export default async function CommercialTeamPage() {
     }));
 
   return (
-    <main className="page-shell">
+    <div className="page-shell">
       <section aria-labelledby="team-title" className="dashboard commercial-page">
         <div className="dashboard-card">
           <p className="brand">SGRC · Wax Brasil</p>
@@ -284,6 +284,6 @@ export default async function CommercialTeamPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

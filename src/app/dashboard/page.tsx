@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { hasCrmRole } from "@/lib/crm";
 import { createClient } from "@/lib/supabase/server";
+import DashboardIcon from "./dashboard-icon";
 import SignOutButton from "./sign-out-button";
 
 const roleLabels: Record<string, string> = {
@@ -14,58 +16,6 @@ const roleLabels: Record<string, string> = {
   legal_compliance: "Jurídico e compliance",
   auditor: "Auditoria",
 };
-
-function DashboardIcon({ name }: { name: "home" | "team" | "clients" | "orders" | "reports" }) {
-  const paths = {
-    home: (
-      <>
-        <path d="m3 10 9-7 9 7" />
-        <path d="M5 9v11h14V9M9 20v-6h6v6" />
-      </>
-    ),
-    team: (
-      <>
-        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="10" cy="7" r="4" />
-        <path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
-    ),
-    clients: (
-      <>
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </>
-    ),
-    orders: (
-      <>
-        <path d="M8 6h13M8 12h13M8 18h13" />
-        <path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2" />
-      </>
-    ),
-    reports: (
-      <>
-        <path d="M4 19V5M4 19h17" />
-        <path d="m7 15 4-4 3 2 6-7" />
-      </>
-    ),
-  };
-
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      height="18"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.7"
-      viewBox="0 0 24 24"
-      width="18"
-    >
-      {paths[name]}
-    </svg>
-  );
-}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -115,59 +65,11 @@ export default async function DashboardPage() {
   const canManageTeam = rolesResult.data.some(
     ({ role }) => role === "super_admin" || role === "director",
   );
+  const canAccessCrm = rolesResult.data.some(({ role }) => hasCrmRole(role));
 
   return (
-    <main className="app-shell">
-      <aside aria-label="Navegação principal" className="app-sidebar">
-        <Link aria-label="SGRC, página inicial" className="sidebar-brand" href="/dashboard">
-          <span aria-hidden="true" className="brand-mark">S</span>
-          <span>
-            <strong>SGRC</strong>
-            <small>Gestão comercial</small>
-          </span>
-        </Link>
-
-        <nav className="sidebar-nav">
-          <p className="nav-group-label">Início</p>
-          <Link aria-current="page" className="nav-item is-active" href="/dashboard">
-            <DashboardIcon name="home" />
-            <span>Visão geral</span>
-          </Link>
-
-          <p className="nav-group-label">Comercial</p>
-          {canManageTeam ? (
-            <Link className="nav-item" href="/dashboard/equipe">
-              <DashboardIcon name="team" />
-              <span>Equipe e territórios</span>
-            </Link>
-          ) : null}
-          <span aria-disabled="true" className="nav-item is-unavailable">
-            <DashboardIcon name="clients" />
-            <span>Leads e clientes</span>
-            <small>Em breve</small>
-          </span>
-          <span aria-disabled="true" className="nav-item is-unavailable">
-            <DashboardIcon name="orders" />
-            <span>Pedidos</span>
-            <small>Em breve</small>
-          </span>
-
-          <p className="nav-group-label">Acompanhamento</p>
-          <span aria-disabled="true" className="nav-item is-unavailable">
-            <DashboardIcon name="reports" />
-            <span>Metas e resultados</span>
-            <small>Em breve</small>
-          </span>
-        </nav>
-
-        <div className="sidebar-footer">
-          <span>SGRC</span>
-          <span>Gestão em construção</span>
-        </div>
-      </aside>
-
-      <div className="app-main">
-        <header className="app-topbar">
+    <>
+      <header className="app-topbar">
           <p className="topbar-context">Central de gestão</p>
           <div className="account-menu">
             <div className="account-copy">
@@ -176,7 +78,7 @@ export default async function DashboardPage() {
             </div>
             <SignOutButton />
           </div>
-        </header>
+      </header>
 
         <section aria-labelledby="dashboard-title" className="workspace">
           <div className="workspace-heading">
@@ -227,6 +129,20 @@ export default async function DashboardPage() {
                 </Link>
               ) : null}
 
+              {canAccessCrm ? (
+                <Link className="module-card module-card-ready" href="/dashboard/leads">
+                  <span className="module-icon module-icon-blue">
+                    <DashboardIcon name="clients" />
+                  </span>
+                  <span className="module-card-copy">
+                    <strong>Leads e clientes</strong>
+                    <span>Gerencie empresas, pessoas e oportunidades.</span>
+                  </span>
+                  <span aria-hidden="true" className="module-arrow">→</span>
+                  <span className="module-status status-ready">Disponível</span>
+                </Link>
+              ) : null}
+
               <div aria-disabled="true" className="module-card module-card-soon">
                 <span className="module-icon module-icon-blue">
                   <DashboardIcon name="clients" />
@@ -262,7 +178,6 @@ export default async function DashboardPage() {
             </div>
           </section>
         </section>
-      </div>
-    </main>
+    </>
   );
 }

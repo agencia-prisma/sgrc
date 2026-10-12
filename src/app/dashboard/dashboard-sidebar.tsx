@@ -1,0 +1,93 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import DashboardIcon from "./dashboard-icon";
+
+export default function DashboardSidebar({
+  canAccessCrm,
+  canManageTeam,
+}: {
+  canAccessCrm: boolean;
+  canManageTeam: boolean;
+}) {
+  const pathname = usePathname();
+  const isDashboardActive = pathname === "/dashboard";
+  const isTeamActive = pathname.startsWith("/dashboard/equipe");
+  const isCrmActive = pathname.startsWith("/dashboard/leads");
+
+  return (
+    <aside aria-label="Navegação principal" className="app-sidebar">
+      <Link
+        aria-label="SGRC, página inicial"
+        className="sidebar-brand"
+        href="/dashboard"
+      >
+        <span aria-hidden="true" className="brand-mark">
+          S
+        </span>
+        <span>
+          <strong>SGRC</strong>
+          <small>Gestão comercial</small>
+        </span>
+      </Link>
+
+      <nav className="sidebar-nav">
+        <p className="nav-group-label">Início</p>
+        <Link
+          aria-current={isDashboardActive ? "page" : undefined}
+          className={`nav-item${isDashboardActive ? " is-active" : ""}`}
+          href="/dashboard"
+        >
+          <DashboardIcon name="home" />
+          <span>Visão geral</span>
+        </Link>
+
+        <p className="nav-group-label">Comercial</p>
+        {canManageTeam ? (
+          <Link
+            aria-current={isTeamActive ? "page" : undefined}
+            className={`nav-item${isTeamActive ? " is-active" : ""}`}
+            href="/dashboard/equipe"
+          >
+            <DashboardIcon name="team" />
+            <span>Equipe e territórios</span>
+          </Link>
+        ) : null}
+        {canAccessCrm ? (
+          <Link
+            aria-current={isCrmActive ? "page" : undefined}
+            className={`nav-item${isCrmActive ? " is-active" : ""}`}
+            href="/dashboard/leads"
+          >
+            <DashboardIcon name="clients" />
+            <span>Leads e clientes</span>
+          </Link>
+        ) : (
+          <span aria-disabled="true" className="nav-item is-unavailable">
+            <DashboardIcon name="clients" />
+            <span>Leads e clientes</span>
+            <small>Em breve</small>
+          </span>
+        )}
+        <span aria-disabled="true" className="nav-item is-unavailable">
+          <DashboardIcon name="orders" />
+          <span>Pedidos</span>
+          <small>Em breve</small>
+        </span>
+
+        <p className="nav-group-label">Acompanhamento</p>
+        <span aria-disabled="true" className="nav-item is-unavailable">
+          <DashboardIcon name="reports" />
+          <span>Metas e resultados</span>
+          <small>Em breve</small>
+        </span>
+      </nav>
+
+      <div className="sidebar-footer">
+        <span>SGRC</span>
+        <span>Gestão em construção</span>
+      </div>
+    </aside>
+  );
+}

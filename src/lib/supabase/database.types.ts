@@ -10,6 +10,20 @@ export type AppRole =
   | "auditor";
 
 export type CommercialMemberType = "representative" | "promoter";
+export type CrmRecordType = "company" | "person";
+export type CrmRecordStatus =
+  | "new"
+  | "contacted"
+  | "qualified"
+  | "converted"
+  | "lost";
+export type CrmInteractionType =
+  | "note"
+  | "call"
+  | "email"
+  | "meeting"
+  | "whatsapp"
+  | "other";
 
 export type Database = {
   public: {
@@ -134,6 +148,90 @@ export type Database = {
         };
         Relationships: [];
       };
+      crm_records: {
+        Row: {
+          id: string;
+          record_type: CrmRecordType;
+          name: string;
+          trade_name: string | null;
+          document: string | null;
+          email: string | null;
+          phone: string | null;
+          status: CrmRecordStatus;
+          territory_id: string | null;
+          owner_user_id: string;
+          notes: string | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          record_type: CrmRecordType;
+          name: string;
+          trade_name?: string | null;
+          document?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          status?: CrmRecordStatus;
+          territory_id?: string | null;
+          owner_user_id: string;
+          notes?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          record_type?: CrmRecordType;
+          name?: string;
+          trade_name?: string | null;
+          document?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          status?: CrmRecordStatus;
+          territory_id?: string | null;
+          owner_user_id?: string;
+          notes?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      crm_interactions: {
+        Row: {
+          id: string;
+          record_id: string;
+          interaction_type: CrmInteractionType;
+          summary: string;
+          details: string | null;
+          occurred_at: string;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          record_id: string;
+          interaction_type: CrmInteractionType;
+          summary: string;
+          details?: string | null;
+          occurred_at?: string;
+          created_by?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          record_id?: string;
+          interaction_type?: CrmInteractionType;
+          summary?: string;
+          details?: string | null;
+          occurred_at?: string;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -148,10 +246,31 @@ export type Database = {
         };
         Returns: undefined;
       };
+      can_access_crm: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      can_manage_crm_record: {
+        Args: {
+          target_owner_user_id: string;
+          target_territory_id: string | null;
+        };
+        Returns: boolean;
+      };
+      can_view_crm_record: {
+        Args: {
+          target_owner_user_id: string;
+          target_territory_id: string | null;
+        };
+        Returns: boolean;
+      };
     };
     Enums: {
       app_role: AppRole;
       commercial_member_type: CommercialMemberType;
+      crm_record_type: CrmRecordType;
+      crm_record_status: CrmRecordStatus;
+      crm_interaction_type: CrmInteractionType;
     };
     CompositeTypes: Record<string, never>;
   };

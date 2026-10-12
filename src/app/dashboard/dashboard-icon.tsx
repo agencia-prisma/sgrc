@@ -1,7 +1,14 @@
 export default function DashboardIcon({
   name,
 }: {
-  name: "home" | "team" | "clients" | "products" | "orders" | "reports";
+  name:
+    | "home"
+    | "team"
+    | "clients"
+    | "products"
+    | "orders"
+    | "reports"
+    | "admin";
 }) {
   const paths = {
     home: (
@@ -39,6 +46,12 @@ export default function DashboardIcon({
       <>
         <path d="M4 19V5M4 19h17" />
         <path d="m7 15 4-4 3 2 6-7" />
+      </>
+    ),
+    admin: (
+      <>
+        <path d="M12 3 4 6v5c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-3Z" />
+        <path d="m9 12 2 2 4-4" />
       </>
     ),
   };

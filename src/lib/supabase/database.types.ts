@@ -468,6 +468,22 @@ export type Database = {
         };
         Returns: undefined;
       };
+      admin_assign_user_role: {
+        Args: {
+          target_user_id: string;
+          target_role: AppRole;
+          target_display_name: string | null;
+          assigned_by_user_id: string;
+        };
+        Returns: undefined;
+      };
+      admin_remove_user_role: {
+        Args: {
+          target_user_id: string;
+          target_role: AppRole;
+        };
+        Returns: boolean;
+      };
     };
     Enums: {
       app_role: AppRole;

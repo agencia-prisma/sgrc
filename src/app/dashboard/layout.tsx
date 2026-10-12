@@ -41,12 +41,16 @@ export default async function DashboardLayout({
   const canManageTeam = roles.some(
     ({ role }) => role === "super_admin" || role === "director",
   );
+  const canManageSystemUsers = roles.some(
+    ({ role }) => role === "super_admin",
+  );
   const canAccessCrm = roles.some(({ role }) => hasCrmRole(role));
 
   return (
     <main className="app-shell">
       <DashboardSidebar
         canAccessCrm={canAccessCrm}
+        canManageSystemUsers={canManageSystemUsers}
         canManageTeam={canManageTeam}
       />
       <div className="app-main">{children}</div>

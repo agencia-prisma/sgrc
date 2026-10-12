@@ -7,9 +7,11 @@ import NotificationBell from "./notification-bell";
 
 export default function DashboardSidebar({
   canAccessCrm,
+  canManageSystemUsers,
   canManageTeam,
 }: {
   canAccessCrm: boolean;
+  canManageSystemUsers: boolean;
   canManageTeam: boolean;
 }) {
   const pathname = usePathname();
@@ -18,6 +20,7 @@ export default function DashboardSidebar({
   const isCrmActive = pathname.startsWith("/dashboard/leads");
   const isProductsActive = pathname.startsWith("/dashboard/produtos");
   const isOrdersActive = pathname.startsWith("/dashboard/pedidos");
+  const isUsersAdminActive = pathname.startsWith("/dashboard/admin/usuarios");
 
   return (
     <aside aria-label="Navegação principal" className="app-sidebar">
@@ -96,6 +99,19 @@ export default function DashboardSidebar({
           </Link>
         ) : null}
 
+        {canManageSystemUsers ? (
+          <>
+            <p className="nav-group-label">Administração</p>
+            <Link
+              aria-current={isUsersAdminActive ? "page" : undefined}
+              className={`nav-item${isUsersAdminActive ? " is-active" : ""}`}
+              href="/dashboard/admin/usuarios"
+            >
+              <DashboardIcon name="admin" />
+              <span>Usuários e acessos</span>
+            </Link>
+          </>
+        ) : null}
         <p className="nav-group-label">Acompanhamento</p>
         <span aria-disabled="true" className="nav-item is-unavailable">
           <DashboardIcon name="reports" />

@@ -65,6 +65,9 @@ export default async function DashboardPage() {
   const canManageTeam = rolesResult.data.some(
     ({ role }) => role === "super_admin" || role === "director",
   );
+  const canManageSystemUsers = rolesResult.data.some(
+    ({ role }) => role === "super_admin",
+  );
   const canAccessCrm = rolesResult.data.some(({ role }) => hasCrmRole(role));
 
   return (
@@ -169,6 +172,25 @@ export default async function DashboardPage() {
                     <strong>Pedidos e aprovações</strong>
                     <span>
                       Crie pedidos e acompanhe o fluxo de aprovação.
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="module-arrow">→</span>
+                  <span className="module-status status-ready">Disponível</span>
+                </Link>
+              ) : null}
+
+              {canManageSystemUsers ? (
+                <Link
+                  className="module-card module-card-ready"
+                  href="/dashboard/admin/usuarios"
+                >
+                  <span className="module-icon module-icon-purple">
+                    <DashboardIcon name="admin" />
+                  </span>
+                  <span className="module-card-copy">
+                    <strong>Usuários e acessos</strong>
+                    <span>
+                      Convide usuários e gerencie papéis do sistema.
                     </span>
                   </span>
                   <span aria-hidden="true" className="module-arrow">→</span>

@@ -374,6 +374,105 @@ a:focus-visible {
   color: var(--foreground);
 }
 
+.system-user-invite-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+}
+
+.system-users-heading {
+  align-items: end;
+}
+
+.system-user-search {
+  width: min(100%, 300px);
+}
+
+.system-users-table {
+  min-width: 760px;
+}
+
+.system-user-status {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f1f3f6;
+  color: #596579;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.system-user-status.is-active {
+  background: #e9f7ee;
+  color: #1d6438;
+}
+
+.system-user-status.is-blocked {
+  background: #fceaea;
+  color: #9d2e2e;
+}
+
+.system-user-role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.system-user-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fcfbfd;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.system-user-role button {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.system-user-role button:hover:not(:disabled) {
+  background: #eeeaf4;
+  color: #9d2e2e;
+}
+
+.system-user-role button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.system-user-role-select {
+  min-width: 160px;
+  min-height: 38px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.system-user-feedback {
+  margin-bottom: 16px;
+}
+
+.system-users-load-more {
+  display: block;
+  margin: 18px auto 0;
+}
+
 .product-form {
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   align-items: end;
@@ -1191,6 +1290,19 @@ a:focus-visible {
 }
 
 @media (max-width: 520px) {
+  .system-user-invite-form {
+    grid-template-columns: 1fr;
+  }
+
+  .system-users-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .system-user-search {
+    width: 100%;
+  }
+
   .sales-order-form {
     grid-template-columns: 1fr;
   }

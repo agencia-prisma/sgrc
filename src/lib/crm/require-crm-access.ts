@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { hasRequiredMfaRole } from "@/lib/auth/mfa";
 import { hasCrmRole } from "@/lib/crm";
 import { createClient } from "@/lib/supabase/server";
 
@@ -49,6 +50,18 @@ export async function requireCrmAccess() {
     return {
       response: NextResponse.json(
         { error: "Você não tem permissão para acessar o CRM." },
+        { status: 403 },
+      ),
+    };
+  }
+
+  if (
+    hasRequiredMfaRole(roles.map(({ role }) => role)) &&
+    data.claims.aal !== "aal2"
+  ) {
+    return {
+      response: NextResponse.json(
+        { error: "Confirme o segundo fator para continuar." },
         { status: 403 },
       ),
     };

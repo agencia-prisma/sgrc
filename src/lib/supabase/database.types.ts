@@ -402,6 +402,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      has_required_mfa_assurance: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
       create_commercial_team_member: {
         Args: {
           target_user_id: string;

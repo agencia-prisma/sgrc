@@ -15,7 +15,7 @@ export default function SignOutButton() {
 
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({ scope: "global" });
 
       if (error) {
         setErrorMessage("Não foi possível encerrar a sessão. Tente novamente.");

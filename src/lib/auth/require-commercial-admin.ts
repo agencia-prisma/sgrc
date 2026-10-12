@@ -59,5 +59,14 @@ export async function requireCommercialAdmin() {
     };
   }
 
+  if (data.claims.aal !== "aal2") {
+    return {
+      response: NextResponse.json(
+        { error: "Confirme o segundo fator para continuar." },
+        { status: 403 },
+      ),
+    };
+  }
+
   return { supabase, userId };
 }

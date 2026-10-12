@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import DashboardSidebar from "./dashboard-sidebar";
+import { hasRequiredMfaRole } from "@/lib/auth/mfa";
 import { hasCrmRole } from "@/lib/crm";
 import { createClient } from "@/lib/supabase/server";
 
@@ -36,6 +37,13 @@ export default async function DashboardLayout({
       code: rolesError.code,
     });
     throw new Error("Não foi possível carregar as permissões de navegação.");
+  }
+
+  if (
+    hasRequiredMfaRole(roles.map(({ role }) => role)) &&
+    claimsData.claims.aal !== "aal2"
+  ) {
+    redirect("/auth/mfa");
   }
 
   const canManageTeam = roles.some(

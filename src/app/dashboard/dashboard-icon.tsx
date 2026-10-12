@@ -5,8 +5,10 @@ export default function DashboardIcon({
     | "home"
     | "team"
     | "clients"
+    | "finance"
     | "products"
     | "orders"
+    | "approvals"
     | "reports"
     | "admin";
 }) {
@@ -30,6 +32,11 @@ export default function DashboardIcon({
         <circle cx="12" cy="7" r="4" />
       </>
     ),
+    finance: (
+      <>
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </>
+    ),
     products: (
       <>
         <path d="m4 7 8-4 8 4-8 4-8-4Z" />
@@ -40,6 +47,12 @@ export default function DashboardIcon({
       <>
         <path d="M8 6h13M8 12h13M8 18h13" />
         <path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2" />
+      </>
+    ),
+    approvals: (
+      <>
+        <path d="M8 5h12M8 12h12M8 19h12" />
+        <path d="m3 5 1 1 2-2M3 12l1 1 2-2M3 19l1 1 2-2" />
       </>
     ),
     reports: (

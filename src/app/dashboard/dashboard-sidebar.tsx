@@ -7,12 +7,16 @@ import NotificationBell from "./notification-bell";
 
 export default function DashboardSidebar({
   canAccessCrm,
+  canAccessFinance,
   canManageSystemUsers,
   canManageTeam,
+  canReviewTransfers,
 }: {
   canAccessCrm: boolean;
+  canAccessFinance: boolean;
   canManageSystemUsers: boolean;
   canManageTeam: boolean;
+  canReviewTransfers: boolean;
 }) {
   const pathname = usePathname();
   const isDashboardActive = pathname === "/dashboard";
@@ -20,6 +24,8 @@ export default function DashboardSidebar({
   const isCrmActive = pathname.startsWith("/dashboard/leads");
   const isProductsActive = pathname.startsWith("/dashboard/produtos");
   const isOrdersActive = pathname.startsWith("/dashboard/pedidos");
+  const isTransfersActive = pathname.startsWith("/dashboard/transferencias");
+  const isFinanceActive = pathname.startsWith("/dashboard/financeiro");
   const isUsersAdminActive = pathname.startsWith("/dashboard/admin/usuarios");
 
   return (
@@ -88,6 +94,16 @@ export default function DashboardSidebar({
             <span>Produtos</span>
           </Link>
         ) : null}
+        {canReviewTransfers ? (
+          <Link
+            aria-current={isTransfersActive ? "page" : undefined}
+            className={`nav-item${isTransfersActive ? " is-active" : ""}`}
+            href="/dashboard/transferencias"
+          >
+            <DashboardIcon name="approvals" />
+            <span>Transferências de carteira</span>
+          </Link>
+        ) : null}
         {canAccessCrm ? (
           <Link
             aria-current={isOrdersActive ? "page" : undefined}
@@ -97,6 +113,19 @@ export default function DashboardSidebar({
             <DashboardIcon name="orders" />
             <span>Pedidos</span>
           </Link>
+        ) : null}
+        {canAccessFinance ? (
+          <>
+            <p className="nav-group-label">Financeiro</p>
+            <Link
+              aria-current={isFinanceActive ? "page" : undefined}
+              className={`nav-item${isFinanceActive ? " is-active" : ""}`}
+              href="/dashboard/financeiro"
+            >
+              <DashboardIcon name="finance" />
+              <span>Faturamento e recebimentos</span>
+            </Link>
+          </>
         ) : null}
 
         {canManageSystemUsers ? (

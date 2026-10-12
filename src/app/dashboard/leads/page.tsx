@@ -142,6 +142,28 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
       profile.display_name || `Usuário ${profile.id.slice(0, 8)}`,
     ]),
   );
+  const protectionResult =
+    recordsResult.data.length > 0
+      ? await supabase
+          .from("crm_customer_protections")
+          .select("customer_id, protected_until, protected_owner_user_id")
+          .in(
+            "customer_id",
+            recordsResult.data.map((record) => record.id),
+          )
+      : { data: [], error: null };
+  if (protectionResult.error) {
+    console.error("CRM portfolio protection lookup failed.", {
+      code: protectionResult.error.code,
+    });
+    throw new Error("Não foi possível carregar as vigências da carteira.");
+  }
+  const protections = new Map(
+    protectionResult.data.map((protection) => [
+      protection.customer_id,
+      protection,
+    ]),
+  );
   const territories = territoriesResult.data
     .filter((territory) => territory.is_active)
     .map((territory) => ({
@@ -241,6 +263,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                     <th scope="col">Contato</th>
                     <th scope="col">Território</th>
                     <th scope="col">Responsável</th>
+                    <th scope="col">Proteção</th>
                     <th scope="col">Etapa</th>
                   </tr>
                 </thead>
@@ -276,6 +299,26 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                           : "—"}
                       </td>
                       <td>{profileLabels.get(record.owner_user_id) ?? "—"}</td>
+                      <td>
+                        {(() => {
+                          const protection = protections.get(record.id);
+                          if (!protection) return "—";
+                          const isActive =
+                            protection.protected_until >=
+                            new Date().toISOString().slice(0, 10);
+                          return (
+                            <span
+                              className={`crm-protection-badge${isActive ? " is-active" : ""}`}
+                            >
+                              {isActive
+                                ? `Até ${new Intl.DateTimeFormat("pt-BR").format(
+                                    new Date(`${protection.protected_until}T12:00:00`),
+                                  )}`
+                                : "Encerrada"}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td>
                         <span className={`crm-status crm-status-${record.status}`}>
                           {CRM_STATUS_LABELS[record.status]}

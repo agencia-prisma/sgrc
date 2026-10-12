@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import AddInteractionForm from "../add-interaction-form";
+import ProtectedTransferManager from "../protected-transfer-manager";
 import RecordEditForm from "../record-edit-form";
 import {
   CRM_INTERACTION_LABELS,
@@ -61,7 +62,7 @@ export default async function CrmRecordPage({
       .limit(200),
     supabase
       .from("commercial_team_members")
-      .select("user_id, is_active")
+      .select("user_id, manager_user_id, member_type, is_active")
       .eq("is_active", true)
       .order("created_at"),
   ]);
@@ -80,19 +81,67 @@ export default async function CrmRecordPage({
     throw new Error("Não foi possível carregar o histórico do cadastro.");
   }
 
-  const { data: profiles, error: profilesError } = await supabase
-    .from("profiles")
-    .select("id, display_name");
-  if (profilesError) {
-    console.error("CRM user label lookup failed.", { code: profilesError.code });
-    throw new Error("Não foi possível carregar os responsáveis do cadastro.");
+  const [
+    profilesResult,
+    protectionResult,
+    transferRequestsResult,
+    eligibleOwnersResult,
+  ] =
+    await Promise.all([
+      supabase.from("profiles").select("id, display_name"),
+      supabase
+        .from("crm_customer_protections")
+        .select("*")
+        .eq("customer_id", id)
+        .maybeSingle(),
+      supabase
+        .from("crm_customer_transfer_requests")
+        .select("*")
+        .eq("customer_id", id)
+        .order("created_at", { ascending: false })
+        .limit(50),
+      supabase
+        .rpc("list_crm_transfer_owners", { target_customer_id: id }),
+    ]);
+  if (
+    profilesResult.error ||
+    protectionResult.error ||
+    transferRequestsResult.error ||
+    eligibleOwnersResult.error
+  ) {
+    console.error("CRM protection data loading failed.", {
+      codes: [
+        profilesResult.error?.code,
+        protectionResult.error?.code,
+        transferRequestsResult.error?.code,
+        eligibleOwnersResult.error?.code,
+      ].filter(Boolean),
+    });
+    throw new Error("Não foi possível carregar os dados da carteira protegida.");
   }
+  const profiles = profilesResult.data;
   const profileLabels = new Map(
     profiles.map((profile) => [
       profile.id,
       profile.display_name || `Usuário ${profile.id.slice(0, 8)}`,
     ]),
   );
+  const userId = claimsData.claims.sub;
+  const protectedCustomer = protectionResult.data;
+  const isOwnershipProtected =
+    protectedCustomer !== null &&
+    protectedCustomer.protected_until >= new Date().toISOString().slice(0, 10);
+  const isOwnerManager = membersResult.data.some(
+    (member) =>
+      member.user_id === record.owner_user_id &&
+      member.manager_user_id === userId,
+  );
+  const eligibleOwners = eligibleOwnersResult.data.map((member) => ({
+      id: member.user_id,
+      label:
+        member.display_name ??
+        `Usuário ${member.user_id.slice(0, 8)}`,
+    }));
   const territoryLabels = new Map(
     territoriesResult.data.map((territory) => [
       territory.id,
@@ -166,8 +215,64 @@ export default async function CrmRecordPage({
             record={record}
             owners={owners}
             territories={territoryOptions}
+            ownershipProtected={isOwnershipProtected}
           />
         </section>
+
+        {protectedCustomer ? (
+          <section
+            aria-labelledby="crm-protection-title"
+            className="module-section crm-section"
+          >
+            <div className="section-heading">
+              <div>
+                <h2 className="section-title" id="crm-protection-title">
+                  Proteção da carteira
+                </h2>
+                <p>
+                  Responsável protegido:{" "}
+                  {profileLabels.get(protectedCustomer.protected_owner_user_id) ??
+                    "—"}
+                  {" · "}
+                  {isOwnershipProtected
+                    ? "Ativa"
+                    : "Encerrada"}
+                </p>
+              </div>
+            </div>
+            {isOwnershipProtected ? (
+              <ProtectedTransferManager
+                canRequest={
+                  userId === record.owner_user_id || isOwnerManager
+                }
+                canReviewDirector={
+                  claimsData.claims.aal === "aal2" &&
+                  roles.some(
+                    ({ role }) =>
+                      role === "director" || role === "super_admin",
+                  )
+                }
+                currentUserId={userId}
+                customerId={record.id}
+                owners={eligibleOwners}
+                profileLabels={Object.fromEntries(profileLabels)}
+                protectedOwnerUserId={protectedCustomer.protected_owner_user_id}
+                protectedUntil={protectedCustomer.protected_until}
+                requests={transferRequestsResult.data}
+              />
+            ) : (
+              <p className="field-help">
+                A proteção terminou em{" "}
+                {new Intl.DateTimeFormat("pt-BR", {
+                  dateStyle: "long",
+                }).format(
+                  new Date(`${protectedCustomer.protected_until}T12:00:00`),
+                )}
+                .
+              </p>
+            )}
+          </section>
+        ) : null}
 
         <section
           aria-labelledby="crm-interactions-title"

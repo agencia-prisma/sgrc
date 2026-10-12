@@ -53,13 +53,24 @@ export default async function DashboardLayout({
     ({ role }) => role === "super_admin",
   );
   const canAccessCrm = roles.some(({ role }) => hasCrmRole(role));
+  const canAccessFinance = roles.some(
+    ({ role }) => role === "finance" || role === "super_admin",
+  );
+  const canReviewTransfers = roles.some(
+    ({ role }) =>
+      role === "sales_manager" ||
+      role === "director" ||
+      role === "super_admin",
+  );
 
   return (
     <main className="app-shell">
       <DashboardSidebar
         canAccessCrm={canAccessCrm}
+        canAccessFinance={canAccessFinance}
         canManageSystemUsers={canManageSystemUsers}
         canManageTeam={canManageTeam}
+        canReviewTransfers={canReviewTransfers}
       />
       <div className="app-main">{children}</div>
     </main>

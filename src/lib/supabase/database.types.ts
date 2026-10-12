@@ -29,6 +29,14 @@ export type SalesOrderStatus =
   | "pending_approval"
   | "approved"
   | "rejected";
+export type SalesOrderFinancialEventType = "invoice" | "payment_received";
+export type SalesOrderFinancialEventSource = "manual" | "erp";
+export type CrmTransferStatus =
+  | "pending_manager"
+  | "pending_director"
+  | "approved"
+  | "rejected";
+export type CrmProtectionEventType = "purchase" | "transfer";
 
 export type Database = {
   public: {
@@ -399,6 +407,177 @@ export type Database = {
         };
         Relationships: [];
       };
+      sales_order_financial_events: {
+        Row: {
+          id: string;
+          sales_order_id: string;
+          event_type: SalesOrderFinancialEventType;
+          source: SalesOrderFinancialEventSource;
+          external_event_id: string | null;
+          invoice_number: string | null;
+          amount: number | null;
+          occurred_on: string;
+          recorded_by: string | null;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          sales_order_id: string;
+          event_type: SalesOrderFinancialEventType;
+          source: SalesOrderFinancialEventSource;
+          external_event_id?: string | null;
+          invoice_number?: string | null;
+          amount?: number | null;
+          occurred_on: string;
+          recorded_by?: string | null;
+          recorded_at?: string;
+        };
+        Update: {
+          id?: string;
+          sales_order_id?: string;
+          event_type?: SalesOrderFinancialEventType;
+          source?: SalesOrderFinancialEventSource;
+          external_event_id?: string | null;
+          invoice_number?: string | null;
+          amount?: number | null;
+          occurred_on?: string;
+          recorded_by?: string | null;
+          recorded_at?: string;
+        };
+        Relationships: [];
+      };
+      crm_customer_protections: {
+        Row: {
+          customer_id: string;
+          protected_owner_user_id: string;
+          protected_since: string;
+          protected_until: string;
+          source_order_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          customer_id: string;
+          protected_owner_user_id: string;
+          protected_since: string;
+          protected_until: string;
+          source_order_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          customer_id?: string;
+          protected_owner_user_id?: string;
+          protected_since?: string;
+          protected_until?: string;
+          source_order_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      crm_customer_protection_events: {
+        Row: {
+          id: string;
+          customer_id: string;
+          event_type: CrmProtectionEventType;
+          from_owner_user_id: string | null;
+          to_owner_user_id: string;
+          source_order_id: string | null;
+          protected_since: string;
+          protected_until: string;
+          recorded_by: string | null;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          event_type: CrmProtectionEventType;
+          from_owner_user_id?: string | null;
+          to_owner_user_id: string;
+          source_order_id?: string | null;
+          protected_since: string;
+          protected_until: string;
+          recorded_by?: string | null;
+          recorded_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string;
+          event_type?: CrmProtectionEventType;
+          from_owner_user_id?: string | null;
+          to_owner_user_id?: string;
+          source_order_id?: string | null;
+          protected_since?: string;
+          protected_until?: string;
+          recorded_by?: string | null;
+          recorded_at?: string;
+        };
+        Relationships: [];
+      };
+      crm_customer_transfer_requests: {
+        Row: {
+          id: string;
+          customer_id: string;
+          requested_by: string;
+          source_owner_user_id: string;
+          target_owner_user_id: string;
+          required_manager_user_id: string;
+          status: CrmTransferStatus;
+          reason: string;
+          manager_decision: string | null;
+          manager_decided_by: string | null;
+          manager_decided_at: string | null;
+          manager_decision_reason: string | null;
+          director_decision: string | null;
+          director_decided_by: string | null;
+          director_decided_at: string | null;
+          director_decision_reason: string | null;
+          transferred_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          requested_by: string;
+          source_owner_user_id: string;
+          target_owner_user_id: string;
+          required_manager_user_id: string;
+          status?: CrmTransferStatus;
+          reason: string;
+          manager_decision?: string | null;
+          manager_decided_by?: string | null;
+          manager_decided_at?: string | null;
+          manager_decision_reason?: string | null;
+          director_decision?: string | null;
+          director_decided_by?: string | null;
+          director_decided_at?: string | null;
+          director_decision_reason?: string | null;
+          transferred_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string;
+          requested_by?: string;
+          source_owner_user_id?: string;
+          target_owner_user_id?: string;
+          required_manager_user_id?: string;
+          status?: CrmTransferStatus;
+          reason?: string;
+          manager_decision?: string | null;
+          manager_decided_by?: string | null;
+          manager_decided_at?: string | null;
+          manager_decision_reason?: string | null;
+          director_decision?: string | null;
+          director_decided_by?: string | null;
+          director_decided_at?: string | null;
+          director_decision_reason?: string | null;
+          transferred_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -472,6 +651,49 @@ export type Database = {
         };
         Returns: undefined;
       };
+      record_sales_order_invoice: {
+        Args: {
+          target_order_id: string;
+          target_invoice_number: string;
+          target_invoice_date: string;
+          target_source: SalesOrderFinancialEventSource;
+          target_external_event_id: string | null;
+        };
+        Returns: string;
+      };
+      record_sales_order_payment: {
+        Args: {
+          target_order_id: string;
+          target_amount: number;
+          target_payment_date: string;
+          target_source: SalesOrderFinancialEventSource;
+          target_external_event_id: string | null;
+        };
+        Returns: string;
+      };
+      list_crm_transfer_owners: {
+        Args: { target_customer_id: string };
+        Returns: {
+          user_id: string;
+          display_name: string | null;
+        }[];
+      };
+      create_crm_customer_transfer_request: {
+        Args: {
+          target_customer_id: string;
+          target_owner_user_id: string;
+          transfer_reason: string;
+        };
+        Returns: string;
+      };
+      review_crm_customer_transfer_request: {
+        Args: {
+          target_request_id: string;
+          approve: boolean;
+          decision_reason?: string | null;
+        };
+        Returns: CrmTransferStatus;
+      };
       admin_assign_user_role: {
         Args: {
           target_user_id: string;
@@ -496,6 +718,10 @@ export type Database = {
       crm_record_status: CrmRecordStatus;
       crm_interaction_type: CrmInteractionType;
       sales_order_status: SalesOrderStatus;
+      sales_order_financial_event_type: SalesOrderFinancialEventType;
+      sales_order_financial_event_source: SalesOrderFinancialEventSource;
+      crm_transfer_status: CrmTransferStatus;
+      crm_protection_event_type: CrmProtectionEventType;
     };
     CompositeTypes: Record<string, never>;
   };

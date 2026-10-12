@@ -69,6 +69,9 @@ export default async function DashboardPage() {
     ({ role }) => role === "super_admin",
   );
   const canAccessCrm = rolesResult.data.some(({ role }) => hasCrmRole(role));
+  const canAccessFinance = rolesResult.data.some(
+    ({ role }) => role === "finance" || role === "super_admin",
+  );
 
   return (
     <>
@@ -172,6 +175,25 @@ export default async function DashboardPage() {
                     <strong>Pedidos e aprovações</strong>
                     <span>
                       Crie pedidos e acompanhe o fluxo de aprovação.
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="module-arrow">→</span>
+                  <span className="module-status status-ready">Disponível</span>
+                </Link>
+              ) : null}
+
+              {canAccessFinance ? (
+                <Link
+                  className="module-card module-card-ready"
+                  href="/dashboard/financeiro"
+                >
+                  <span className="module-icon module-icon-green">
+                    <DashboardIcon name="finance" />
+                  </span>
+                  <span className="module-card-copy">
+                    <strong>Faturamento e recebimentos</strong>
+                    <span>
+                      Registre notas e pagamentos para pedidos aprovados.
                     </span>
                   </span>
                   <span aria-hidden="true" className="module-arrow">→</span>

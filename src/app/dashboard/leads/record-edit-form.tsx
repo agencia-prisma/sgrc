@@ -19,6 +19,7 @@ export default function RecordEditForm({
   record,
   territories,
   owners,
+  ownershipProtected = false,
 }: {
   id: string;
   record: {
@@ -35,6 +36,7 @@ export default function RecordEditForm({
   };
   territories: TerritoryOption[];
   owners: OwnerOption[];
+  ownershipProtected?: boolean;
 }) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export default function RecordEditForm({
           phone: formData.get("phone"),
           status: formData.get("status"),
           territoryId: formData.get("territory-id") || null,
-          ...(owners.length > 1
+          ...(owners.length > 1 && !ownershipProtected
             ? { ownerUserId: formData.get("owner-user-id") }
             : {}),
           notes: formData.get("notes"),
@@ -195,6 +197,7 @@ export default function RecordEditForm({
           <select
             className="input"
             defaultValue={record.owner_user_id}
+            disabled={ownershipProtected}
             id="edit-record-owner"
             name="owner-user-id"
           >
@@ -210,6 +213,12 @@ export default function RecordEditForm({
             ))}
           </select>
         </label>
+      ) : null}
+      {ownershipProtected ? (
+        <p className="field-help crm-field-wide">
+          A carteira está protegida. A alteração do responsável só pode ser
+          feita após as aprovações de transferência.
+        </p>
       ) : null}
 
       <label className="field crm-field-wide" htmlFor="edit-record-notes">

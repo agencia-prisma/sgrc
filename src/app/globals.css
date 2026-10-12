@@ -699,6 +699,64 @@ a:focus-visible {
   margin: 10px 0;
   color: #566176;
   font-size: 13px;
+}
+
+.crm-protection-content {
+  display: grid;
+  gap: 16px;
+}
+
+.crm-protection-content > p,
+.crm-transfer-request > p,
+.crm-transfer-card > p {
+  margin: 0;
+}
+
+.crm-protection-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f0f2f5;
+  color: #586273;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.crm-protection-badge.is-active {
+  background: #e9f7ee;
+  color: #1d6438;
+}
+
+.crm-transfer-request,
+.crm-transfer-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fcfbfd;
+}
+
+.crm-transfer-list,
+.crm-transfer-history {
+  display: grid;
+  gap: 12px;
+}
+
+.crm-transfer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.secondary-button {
+  background: #e9eaf0;
+  color: #30384a;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #dfe1e8;
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: anywhere;

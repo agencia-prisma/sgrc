@@ -143,27 +143,38 @@ export default async function DashboardPage() {
                 </Link>
               ) : null}
 
-              <div aria-disabled="true" className="module-card module-card-soon">
-                <span className="module-icon module-icon-blue">
-                  <DashboardIcon name="clients" />
-                </span>
-                <span className="module-card-copy">
-                  <strong>Leads e clientes</strong>
-                  <span>Relacionamento, carteira e oportunidades.</span>
-                </span>
-                <span className="module-status">Em desenvolvimento</span>
-              </div>
+              {canAccessCrm ? (
+                <Link className="module-card module-card-ready" href="/dashboard/produtos">
+                  <span className="module-icon module-icon-green">
+                    <DashboardIcon name="products" />
+                  </span>
+                  <span className="module-card-copy">
+                    <strong>Catálogo de produtos</strong>
+                    <span>Consulte produtos, SKUs e preços vigentes.</span>
+                  </span>
+                  <span aria-hidden="true" className="module-arrow">→</span>
+                  <span className="module-status status-ready">Disponível</span>
+                </Link>
+              ) : null}
 
-              <div aria-disabled="true" className="module-card module-card-soon">
-                <span className="module-icon module-icon-green">
-                  <DashboardIcon name="orders" />
-                </span>
-                <span className="module-card-copy">
-                  <strong>Pedidos e aprovações</strong>
-                  <span>Fluxos comerciais e acompanhamento de pedidos.</span>
-                </span>
-                <span className="module-status">Em desenvolvimento</span>
-              </div>
+              {canAccessCrm ? (
+                <Link
+                  className="module-card module-card-ready"
+                  href="/dashboard/pedidos"
+                >
+                  <span className="module-icon module-icon-green">
+                    <DashboardIcon name="orders" />
+                  </span>
+                  <span className="module-card-copy">
+                    <strong>Pedidos e aprovações</strong>
+                    <span>
+                      Crie pedidos e acompanhe o fluxo de aprovação.
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="module-arrow">→</span>
+                  <span className="module-status status-ready">Disponível</span>
+                </Link>
+              ) : null}
 
               <div aria-disabled="true" className="module-card module-card-soon">
                 <span className="module-icon module-icon-amber">

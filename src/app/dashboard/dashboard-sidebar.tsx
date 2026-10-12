@@ -15,6 +15,8 @@ export default function DashboardSidebar({
   const isDashboardActive = pathname === "/dashboard";
   const isTeamActive = pathname.startsWith("/dashboard/equipe");
   const isCrmActive = pathname.startsWith("/dashboard/leads");
+  const isProductsActive = pathname.startsWith("/dashboard/produtos");
+  const isOrdersActive = pathname.startsWith("/dashboard/pedidos");
 
   return (
     <aside aria-label="Navegação principal" className="app-sidebar">
@@ -70,11 +72,26 @@ export default function DashboardSidebar({
             <small>Em breve</small>
           </span>
         )}
-        <span aria-disabled="true" className="nav-item is-unavailable">
-          <DashboardIcon name="orders" />
-          <span>Pedidos</span>
-          <small>Em breve</small>
-        </span>
+        {canAccessCrm ? (
+          <Link
+            aria-current={isProductsActive ? "page" : undefined}
+            className={`nav-item${isProductsActive ? " is-active" : ""}`}
+            href="/dashboard/produtos"
+          >
+            <DashboardIcon name="products" />
+            <span>Produtos</span>
+          </Link>
+        ) : null}
+        {canAccessCrm ? (
+          <Link
+            aria-current={isOrdersActive ? "page" : undefined}
+            className={`nav-item${isOrdersActive ? " is-active" : ""}`}
+            href="/dashboard/pedidos"
+          >
+            <DashboardIcon name="orders" />
+            <span>Pedidos</span>
+          </Link>
+        ) : null}
 
         <p className="nav-group-label">Acompanhamento</p>
         <span aria-disabled="true" className="nav-item is-unavailable">

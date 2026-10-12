@@ -24,6 +24,11 @@ export type CrmInteractionType =
   | "meeting"
   | "whatsapp"
   | "other";
+export type SalesOrderStatus =
+  | "draft"
+  | "pending_approval"
+  | "approved"
+  | "rejected";
 
 export type Database = {
   public: {
@@ -232,6 +237,132 @@ export type Database = {
         };
         Relationships: [];
       };
+      products: {
+        Row: {
+          id: string;
+          sku: string;
+          name: string;
+          price: number;
+          is_active: boolean;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          sku: string;
+          name: string;
+          price: number;
+          is_active?: boolean;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          sku?: string;
+          name?: string;
+          price?: number;
+          is_active?: boolean;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      sales_orders: {
+        Row: {
+          id: string;
+          customer_id: string;
+          customer_name_snapshot: string;
+          customer_document_snapshot: string | null;
+          territory_id: string | null;
+          owner_user_id: string;
+          status: SalesOrderStatus;
+          total: number;
+          notes: string | null;
+          submitted_at: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          rejection_reason: string | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          customer_name_snapshot: string;
+          customer_document_snapshot?: string | null;
+          territory_id?: string | null;
+          owner_user_id?: string;
+          status?: SalesOrderStatus;
+          total?: number;
+          notes?: string | null;
+          submitted_at?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          rejection_reason?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string;
+          customer_name_snapshot?: string;
+          customer_document_snapshot?: string | null;
+          territory_id?: string | null;
+          owner_user_id?: string;
+          status?: SalesOrderStatus;
+          total?: number;
+          notes?: string | null;
+          submitted_at?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          rejection_reason?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      sales_order_items: {
+        Row: {
+          id: string;
+          order_id: string;
+          product_id: string;
+          sku_snapshot: string;
+          name_snapshot: string;
+          quantity: number;
+          unit_price: number;
+          line_total: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          product_id: string;
+          sku_snapshot: string;
+          name_snapshot: string;
+          quantity: number;
+          unit_price: number;
+          line_total: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          product_id?: string;
+          sku_snapshot?: string;
+          name_snapshot?: string;
+          quantity?: number;
+          unit_price?: number;
+          line_total?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -264,6 +395,43 @@ export type Database = {
         };
         Returns: boolean;
       };
+      can_view_sales_order: {
+        Args: { target_owner_user_id: string };
+        Returns: boolean;
+      };
+      can_review_sales_order: {
+        Args: { target_owner_user_id: string };
+        Returns: boolean;
+      };
+      create_sales_order: {
+        Args: {
+          target_customer_id: string;
+          target_items: Json;
+          target_notes?: string | null;
+        };
+        Returns: string;
+      };
+      update_sales_order_draft: {
+        Args: {
+          target_order_id: string;
+          target_customer_id: string;
+          target_items: Json;
+          target_notes?: string | null;
+        };
+        Returns: undefined;
+      };
+      submit_sales_order: {
+        Args: { target_order_id: string };
+        Returns: undefined;
+      };
+      review_sales_order: {
+        Args: {
+          target_order_id: string;
+          approve: boolean;
+          reason?: string | null;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       app_role: AppRole;
@@ -271,7 +439,16 @@ export type Database = {
       crm_record_type: CrmRecordType;
       crm_record_status: CrmRecordStatus;
       crm_interaction_type: CrmInteractionType;
+      sales_order_status: SalesOrderStatus;
     };
     CompositeTypes: Record<string, never>;
   };
 };
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
